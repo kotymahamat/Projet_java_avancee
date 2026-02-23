@@ -35,7 +35,7 @@ public class EmployeDAO {
         return liste;
     }
 
-    // MODIFIER un employé
+
     public void modifier(Employe emp) {
         String sql = "UPDATE employe SET nom=?, prenom=?, email=?, id_departement=? WHERE id=?";
         try (Connection conn = ConnexionBD.getConnection();
@@ -48,11 +48,10 @@ public class EmployeDAO {
             pstmt.setInt(5, emp.getId()); // On cible l'employé par son ID
 
             pstmt.executeUpdate();
-            System.out.println("✅ Employé mis à jour !");
+            System.out.println("Employé mis à jour !");
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    // SUPPRIMER un employé
     public void supprimer(int id) {
         String sql = "DELETE FROM employe WHERE id=?";
         try (Connection conn = ConnexionBD.getConnection();
@@ -60,7 +59,7 @@ public class EmployeDAO {
 
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
-            System.out.println("🗑️ Employé supprimé !");
+            System.out.println("Employé supprimé !");
         } catch (SQLException e) { e.printStackTrace(); }
     }
 

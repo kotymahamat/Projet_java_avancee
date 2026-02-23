@@ -14,7 +14,7 @@ public static Connection getConnection() {
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
 
-        // Établissement de la connexion
+
         con = DriverManager.getConnection(URL, USER, PASSWORD);
         System.out.println(" Connexion à MySQL réussie !");
 

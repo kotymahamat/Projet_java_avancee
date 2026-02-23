@@ -41,7 +41,7 @@ public class DepartementDAO {
         }
         return liste;
     }
-    // MODIFIER un département
+
     public void modifier(departement dept) {
         String sql = "UPDATE departement SET nom=?, description=? WHERE id=?";
         try (Connection conn = ConnexionBD.getConnection();
@@ -52,11 +52,10 @@ public class DepartementDAO {
             pstmt.setInt(3, dept.getId());
 
             pstmt.executeUpdate();
-            System.out.println("✅ Département mis à jour !");
+            System.out.println("Département mis à jour !");
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    // SUPPRIMER un département
     public void supprimer(int id) {
 
         String sql = "DELETE FROM departement WHERE id=?";
@@ -65,7 +64,7 @@ public class DepartementDAO {
 
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
-            System.out.println("🗑️ Département supprimé !");
+            System.out.println("Département supprimé !");
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
