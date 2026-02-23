@@ -1,91 +1,130 @@
 package com.gestion.view;
-import com.gestion.dao.UserDao;
 
+import com.gestion.dao.UserDao;
 import javax.swing.*;
 import java.awt.*;
-
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class LoginView extends JFrame {
-    private JTextField txtUsername;
-    private JPasswordField txtPassword;
-    private JButton btnLogin;
+    private JTextField fldUser;
+    private JPasswordField fldPass;
+    private JButton btnEnter;
 
     public LoginView() {
-        // Configuration de la fenêtre
-        setTitle("Authentification - Gestion Entreprise");
-        setSize(400, 500);
+        setTitle("Portail Collaborateurs");
+        setSize(450, 550);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
 
-        // Panel Principal avec fond bleu foncé
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(null);
-        mainPanel.setBackground(new Color(44, 62, 80)); // Bleu minuit
+        // --- PANEL AVEC DÉGRADÉ ---
+        JPanel bgPanel = new JPanel(new GridBagLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                // Dégradé du Bleu Canard au Noir (plus sérieux)
+                GradientPaint gp = new GradientPaint(0, 0, new Color(44, 62, 80), 0, getHeight(), new Color(20, 20, 20));
+                g2d.setPaint(gp);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
 
-        // Titre
-        JLabel lblTitle = new JLabel("CONNEXION", SwingConstants.CENTER);
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 24));
-        lblTitle.setForeground(Color.WHITE);
-        lblTitle.setBounds(0, 50, 400, 30);
-        mainPanel.add(lblTitle);
+        GridBagConstraints g = new GridBagConstraints();
+        g.insets = new Insets(10, 50, 10, 50);
+        g.fill = GridBagConstraints.HORIZONTAL;
 
-        // Champ Utilisateur
-        JLabel lblUser = new JLabel("Utilisateur :");
-        lblUser.setForeground(new Color(189, 195, 199));
-        lblUser.setBounds(50, 130, 100, 20);
-        mainPanel.add(lblUser);
+        // --- TITRE DESIGN ---
+        JLabel title = new JLabel("<html><center>APPLICATION CRUD<br/><span style='font-size:10px; font-weight:normal;'>GESTION DES RESSOURCES</span></center></html>", SwingConstants.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        title.setForeground(new Color(255, 211, 42)); // Couleur Or pour le titre
+        g.gridy = 0; g.insets = new Insets(0, 0, 50, 0);
+        bgPanel.add(title, g);
 
-        txtUsername = new JTextField();
-        txtUsername.setBounds(50, 160, 300, 35);
-        txtUsername.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        mainPanel.add(txtUsername);
+        // --- CHAMPS UTILISATEUR ---
+        fldUser = new JTextField("Nom d'utilisateur");
+        setupField(fldUser, "Nom d'utilisateur");
+        g.gridy = 1; g.insets = new Insets(5, 50, 5, 50);
+        bgPanel.add(fldUser, g);
 
-        // Champ Mot de passe
-        JLabel lblPass = new JLabel("Mot de passe :");
-        lblPass.setForeground(new Color(189, 195, 199));
-        lblPass.setBounds(50, 220, 100, 20);
-        mainPanel.add(lblPass);
+        // --- CHAMPS MOT DE PASSE ---
+        fldPass = new JPasswordField("");
+        setupField(fldPass, "");
+        g.gridy = 2;
+        bgPanel.add(fldPass, g);
 
-        txtPassword = new JPasswordField();
-        txtPassword.setBounds(50, 250, 300, 35);
-        txtPassword.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        mainPanel.add(txtPassword);
+        // Petit texte au dessus du pass (pour aider l'ami)
+        JLabel lPass = new JLabel("Code d'accès :");
+        lPass.setForeground(Color.GRAY);
+        lPass.setFont(new Font("Arial", Font.PLAIN, 10));
+        g.gridy = 3; g.insets = new Insets(-5, 55, 15, 50);
+        bgPanel.add(lPass, g);
 
-        // Bouton Se Connecter
-        btnLogin = new JButton("SE CONNECTER");
-        btnLogin.setBounds(50, 330, 300, 45);
-        btnLogin.setBackground(new Color(52, 152, 219)); // Bleu clair
-        btnLogin.setForeground(Color.WHITE);
-        btnLogin.setFocusPainted(false);
-        btnLogin.setFont(new Font("Arial", Font.BOLD, 14));
-        mainPanel.add(btnLogin);
-        btnLogin.addActionListener(e ->
+        // --- BOUTON ---
+        btnEnter = new JButton("AUTHENTIFICATION");
+        btnEnter.setPreferredSize(new Dimension(0, 45));
+        btnEnter.setBackground(new Color(255, 211, 42));
+        btnEnter.setForeground(Color.BLACK);
+        btnEnter.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnEnter.setFocusPainted(false);
+        btnEnter.setBorder(BorderFactory.createLineBorder(new Color(255, 211, 42), 1));
+        btnEnter.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        {
-            String user = txtUsername.getText();
-            String pass = new String(txtPassword.getPassword());
+        btnEnter.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { btnEnter.setBackground(Color.WHITE); }
+            public void mouseExited(MouseEvent e) { btnEnter.setBackground(new Color(255, 211, 42)); }
+        });
 
-            UserDao userDAO = new UserDao();
-            if (userDAO.authentifier(user, pass)) {
-                JOptionPane.showMessageDialog(this, "Connexion réussie !");
+        g.gridy = 4; g.insets = new Insets(20, 50, 0, 50);
+        bgPanel.add(btnEnter, g);
+
+        // --- LOGIQUE ---
+        btnEnter.addActionListener(e -> {
+            String u = fldUser.getText();
+            String p = new String(fldPass.getPassword());
+            if (new UserDao().authentifier(u, p)) {
                 new MainView().setVisible(true);
                 this.dispose();
-
             } else {
-                JOptionPane.showMessageDialog(this, "Identifiants incorrects", "Erreur", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Accès refusé !", "Erreur", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        add(mainPanel);
+        add(bgPanel);
+    }
+
+    // Méthode pour styliser et gérer le focus (le texte qui s'efface)
+    private void setupField(JTextField f, String hint) {
+        f.setPreferredSize(new Dimension(300, 40));
+        f.setBackground(Color.WHITE);
+        f.setForeground(Color.DARK_GRAY);
+        f.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        f.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(100, 100, 100), 1),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+
+        if(!hint.isEmpty()) {
+            f.addFocusListener(new FocusAdapter() {
+                public void focusGained(FocusEvent e) {
+                    if (f.getText().equals(hint)) {
+                        f.setText("");
+                        f.setForeground(Color.BLACK);
+                    }
+                }
+                public void focusLost(FocusEvent e) {
+                    if (f.getText().isEmpty()) {
+                        f.setForeground(Color.GRAY);
+                        f.setText(hint);
+                    }
+                }
+            });
+        }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new LoginView().setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new LoginView().setVisible(true));
     }
-
-
 }
-

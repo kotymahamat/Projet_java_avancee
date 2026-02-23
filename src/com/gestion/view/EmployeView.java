@@ -10,142 +10,153 @@ import java.awt.*;
 import java.util.List;
 
 public class EmployeView extends JFrame {
-    private JTextField txtNom, txtPrenom, txtEmail;
-    private JComboBox<departement> comboDept;
-    private JTable table;
-    private DefaultTableModel model;
-    private EmployeDAO empDAO = new EmployeDAO();
-    private DepartementDAO deptDAO = new DepartementDAO();
+    private JTextField fldNom, fldPrenom, fldMail;
+    private JComboBox<departement> cbxServices;
+    private JTable tblData;
+    private DefaultTableModel tabModel;
+    private EmployeDAO eService = new EmployeDAO();
+    private DepartementDAO dService = new DepartementDAO();
 
     public EmployeView() {
-        setTitle("Gestion des Employés");
-        setSize(900, 600);
+        setTitle("Panel Collaborateurs - Système Entreprise");
+        setSize(1000, 650);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout());
 
-        // --- 1. Panel Formulaire (NORTH) ---
-        JPanel formPanel = new JPanel(new GridLayout(4, 2, 10, 10));
-        formPanel.setBackground(new Color(52, 73, 94)); // Bleu gris
-        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        // --- CONTENEUR PRINCIPAL ---
+        JPanel mainContainer = new JPanel(new BorderLayout());
+        mainContainer.setBackground(new Color(30, 39, 46)); // Anthracite
 
-        txtNom = new JTextField();
-        txtPrenom = new JTextField();
-        txtEmail = new JTextField();
-        comboDept = new JComboBox<>();
+        // --- ZONE DE DROITE : FORMULAIRE D'ÉDITION ---
+        JPanel editorPanel = new JPanel();
+        editorPanel.setLayout(new BoxLayout(editorPanel, BoxLayout.Y_AXIS));
+        editorPanel.setPreferredSize(new Dimension(320, 0));
+        editorPanel.setBackground(new Color(43, 58, 74));
+        editorPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(255, 211, 42)), "Fiche Information", 0, 0, null, Color.WHITE));
 
-        // Charger les départements
-        List<departement> depts = deptDAO.listerTout();
-        for (departement d : depts) {
-            comboDept.addItem(d);
-        }
+        fldNom = new JTextField();
+        fldPrenom = new JTextField();
+        fldMail = new JTextField();
+        cbxServices = new JComboBox<>();
 
-        JLabel lblNom = new JLabel("Nom :"); lblNom.setForeground(Color.WHITE);
-        JLabel lblPre = new JLabel("Prénom :"); lblPre.setForeground(Color.WHITE);
-        JLabel lblMail = new JLabel("Email :"); lblMail.setForeground(Color.WHITE);
-        JLabel lblDep = new JLabel("Département :"); lblDep.setForeground(Color.WHITE);
+        // Style des champs
+        Dimension fieldSize = new Dimension(280, 30);
+        setupField(fldNom, fieldSize);
+        setupField(fldPrenom, fieldSize);
+        setupField(fldMail, fieldSize);
 
-        formPanel.add(lblNom); formPanel.add(txtNom);
-        formPanel.add(lblPre); formPanel.add(txtPrenom);
-        formPanel.add(lblMail); formPanel.add(txtEmail);
-        formPanel.add(lblDep); formPanel.add(comboDept);
+        // Peupler le combo
+        dService.listerTout().forEach(cbxServices::addItem);
 
-        // --- 2. Tableau (CENTER) ---
-        model = new DefaultTableModel(new String[]{"ID", "Nom", "Prénom", "Email", "ID Dept"}, 0);
-        table = new JTable(model);
-        JScrollPane scrollPane = new JScrollPane(table);
+        // Boutons personnalisés
+        JButton bSave = createCustomBtn("VALIDER", new Color(255, 211, 42), Color.BLACK);
+        JButton bEdit = createCustomBtn("MODIFIER", new Color(11, 232, 129), Color.WHITE);
+        JButton bTrash = createCustomBtn("EFFACER", new Color(255, 94, 87), Color.WHITE);
 
-        // --- 3. Panel Boutons (SOUTH) ---
-        JPanel panelBoutons = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
-        panelBoutons.setBackground(new Color(236, 240, 241));
+        // Ajout des composants à l'éditeur
+        editorPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        addInput(editorPanel, "NOM :", fldNom);
+        addInput(editorPanel, "PRÉNOM :", fldPrenom);
+        addInput(editorPanel, "COURRIEL :", fldMail);
+        addInput(editorPanel, "UNITÉ :", cbxServices);
+        editorPanel.add(Box.createRigidArea(new Dimension(0, 40)));
+        editorPanel.add(bSave); editorPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        editorPanel.add(bEdit); editorPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        editorPanel.add(bTrash);
 
-        JButton btnAdd = new JButton("Ajouter ➕");
-        btnAdd.setBackground(new Color(52, 152, 219));
-        btnAdd.setForeground(Color.WHITE);
+        // --- ZONE DE GAUCHE : LISTE (TABLEAU) ---
+        tabModel = new DefaultTableModel(new String[]{"REF", "NOM", "PRENOM", "EMAIL", "DEPT_ID"}, 0);
+        tblData = new JTable(tabModel);
+        tblData.setFillsViewportHeight(true);
+        tblData.setBackground(Color.WHITE);
+        JScrollPane scroll = new JScrollPane(tblData);
 
-        JButton btnModifier = new JButton("Modifier ✏️");
-        btnModifier.setBackground(new Color(39, 174, 96)); // VERT
-        btnModifier.setForeground(Color.WHITE);
+        // --- SPLIT PANE POUR SÉPARER LES DEUX ---
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroll, editorPanel);
+        split.setDividerLocation(650);
+        split.setResizeWeight(0.7);
 
-        JButton btnSupprimer = new JButton("Supprimer 🗑️");
-        btnSupprimer.setBackground(new Color(192, 57, 43)); // ROUGE
-        btnSupprimer.setForeground(Color.WHITE);
-
-        panelBoutons.add(btnAdd);
-        panelBoutons.add(btnModifier);
-        panelBoutons.add(btnSupprimer);
-
-        // --- 4. Assemblage de la fenêtre ---
-        add(formPanel, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
-        add(panelBoutons, BorderLayout.SOUTH);
-
-        // --- 5. Logique des Actions ---
-
-        // AJOUTER
-        btnAdd.addActionListener(e -> {
-            departement selectedDept = (departement) comboDept.getSelectedItem();
-            if (selectedDept != null) {
-                Employe emp = new Employe(0, txtNom.getText(), txtPrenom.getText(), txtEmail.getText(), selectedDept.getId());
-                empDAO.ajouter(emp);
-                chargerTableau();
-                viderChamps();
+        // --- LOGIQUE DES BOUTONS ---
+        bSave.addActionListener(e -> {
+            departement d = (departement) cbxServices.getSelectedItem();
+            if (d != null) {
+                eService.ajouter(new Employe(0, fldNom.getText(), fldPrenom.getText(), fldMail.getText(), d.getId()));
+                refresh();
+                resetFields();
             }
         });
 
-        // MODIFIER
-        btnModifier.addActionListener(e -> {
-            int ligne = table.getSelectedRow();
-            if (ligne != -1) {
-                int id = (int) model.getValueAt(ligne, 0);
-                departement d = (departement) comboDept.getSelectedItem();
-                Employe emp = new Employe(id, txtNom.getText(), txtPrenom.getText(), txtEmail.getText(), d.getId());
-                empDAO.modifier(emp);
-                chargerTableau();
-                JOptionPane.showMessageDialog(this, "Modifié avec succès !");
-            } else {
-                JOptionPane.showMessageDialog(this, "Sélectionnez un employé dans la table !");
+        bEdit.addActionListener(e -> {
+            int row = tblData.getSelectedRow();
+            if (row != -1) {
+                int id = (int) tabModel.getValueAt(row, 0);
+                departement d = (departement) cbxServices.getSelectedItem();
+                eService.modifier(new Employe(id, fldNom.getText(), fldPrenom.getText(), fldMail.getText(), d.getId()));
+                refresh();
+                JOptionPane.showMessageDialog(this, "Mise à jour réussie");
             }
         });
 
-        // SUPPRIMER
-        btnSupprimer.addActionListener(e -> {
-            int ligne = table.getSelectedRow();
-            if (ligne != -1) {
-                int id = (int) model.getValueAt(ligne, 0);
-                int confirm = JOptionPane.showConfirmDialog(this, "Supprimer cet employé ?", "Confirmation", JOptionPane.YES_NO_OPTION);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    empDAO.supprimer(id);
-                    chargerTableau();
+        bTrash.addActionListener(e -> {
+            int row = tblData.getSelectedRow();
+            if (row != -1) {
+                int id = (int) tabModel.getValueAt(row, 0);
+                if (JOptionPane.showConfirmDialog(this, "Supprimer cet enregistrement ?", "Confirmation", 0) == 0) {
+                    eService.supprimer(id);
+                    refresh();
                 }
-            } else {
-                JOptionPane.showMessageDialog(this, "Sélectionnez une ligne !");
             }
         });
 
-        // Remplir les champs quand on clique sur une ligne
-        table.getSelectionModel().addListSelectionListener(event -> {
-            if (!event.getValueIsAdjusting() && table.getSelectedRow() != -1) {
-                int row = table.getSelectedRow();
-                txtNom.setText(model.getValueAt(row, 1).toString());
-                txtPrenom.setText(model.getValueAt(row, 2).toString());
-                txtEmail.setText(model.getValueAt(row, 3).toString());
+        tblData.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && tblData.getSelectedRow() != -1) {
+                int row = tblData.getSelectedRow();
+                fldNom.setText(tabModel.getValueAt(row, 1).toString());
+                fldPrenom.setText(tabModel.getValueAt(row, 2).toString());
+                fldMail.setText(tabModel.getValueAt(row, 3).toString());
             }
         });
 
-        chargerTableau();
+        mainContainer.add(split, BorderLayout.CENTER);
+        add(mainContainer);
+        refresh();
     }
 
-    private void chargerTableau() {
-        model.setRowCount(0);
-        for (Employe emp : empDAO.listerTout()) {
-            model.addRow(new Object[]{emp.getId(), emp.getNom(), emp.getPrenom(), emp.getEmail(), emp.getIdDepartement()});
+    // --- MÉTHODES DE STYLE ---
+    private void setupField(JTextField f, Dimension d) {
+        f.setMaximumSize(d);
+        f.setPreferredSize(d);
+    }
+
+    private void addInput(JPanel p, String label, JComponent comp) {
+        JLabel l = new JLabel(label);
+        l.setForeground(Color.WHITE);
+        l.setAlignmentX(Component.CENTER_ALIGNMENT);
+        comp.setAlignmentX(Component.CENTER_ALIGNMENT);
+        p.add(l);
+        p.add(comp);
+        p.add(Box.createRigidArea(new Dimension(0, 10)));
+    }
+
+    private JButton createCustomBtn(String txt, Color bg, Color fg) {
+        JButton b = new JButton(txt);
+        b.setBackground(bg);
+        b.setForeground(fg);
+        b.setFocusPainted(false);
+        b.setAlignmentX(Component.CENTER_ALIGNMENT);
+        b.setMaximumSize(new Dimension(200, 40));
+        return b;
+    }
+
+    private void refresh() {
+        tabModel.setRowCount(0);
+        for (Employe emp : eService.listerTout()) {
+            tabModel.addRow(new Object[]{emp.getId(), emp.getNom(), emp.getPrenom(), emp.getEmail(), emp.getIdDepartement()});
         }
     }
 
-    private void viderChamps() {
-        txtNom.setText("");
-        txtPrenom.setText("");
-        txtEmail.setText("");
+    private void resetFields() {
+        fldNom.setText(""); fldPrenom.setText(""); fldMail.setText("");
     }
 }
